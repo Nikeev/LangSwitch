@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct LangSwitchApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        // IMPORTANT
+        Settings {
+            EmptyView().frame(width:.zero)
         }
     }
+    
+//    var body: some Scene {
+//        EmptyView().frame(width: 0, height: 0)
+//    }
 }
