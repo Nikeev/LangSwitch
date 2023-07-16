@@ -8,12 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		4C79BECE2A553F0D006A793C /* LangSwitchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C79BECD2A553F0D006A793C /* LangSwitchApp.swift */; };
-		4C79BED02A553F0D006A793C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C79BECF2A553F0D006A793C /* ContentView.swift */; };
+		4C79BED02A553F0D006A793C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C79BECF2A553F0D006A793C /* AppDelegate.swift */; };
 		4C79BED22A553F0E006A793C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C79BED12A553F0E006A793C /* Assets.xcassets */; };
 		4C79BED52A553F0E006A793C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4C79BED42A553F0E006A793C /* Preview Assets.xcassets */; };
-		4C79BEE02A553F0E006A793C /* LangSwitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C79BEDF2A553F0E006A793C /* LangSwitchTests.swift */; };
-		4C79BEEA2A553F0E006A793C /* LangSwitchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C79BEE92A553F0E006A793C /* LangSwitchUITests.swift */; };
-		4C79BEEC2A553F0E006A793C /* LangSwitchUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C79BEEB2A553F0E006A793C /* LangSwitchUITestsLaunchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,15 +33,12 @@
 /* Begin PBXFileReference section */
 		4C79BECA2A553F0D006A793C /* LangSwitch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LangSwitch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C79BECD2A553F0D006A793C /* LangSwitchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LangSwitchApp.swift; sourceTree = "<group>"; };
-		4C79BECF2A553F0D006A793C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		4C79BECF2A553F0D006A793C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4C79BED12A553F0E006A793C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4C79BED42A553F0E006A793C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		4C79BED62A553F0E006A793C /* LangSwitch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LangSwitch.entitlements; sourceTree = "<group>"; };
 		4C79BEDB2A553F0E006A793C /* LangSwitchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LangSwitchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4C79BEDF2A553F0E006A793C /* LangSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LangSwitchTests.swift; sourceTree = "<group>"; };
 		4C79BEE52A553F0E006A793C /* LangSwitchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LangSwitchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4C79BEE92A553F0E006A793C /* LangSwitchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LangSwitchUITests.swift; sourceTree = "<group>"; };
-		4C79BEEB2A553F0E006A793C /* LangSwitchUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LangSwitchUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +70,6 @@
 			isa = PBXGroup;
 			children = (
 				4C79BECC2A553F0D006A793C /* LangSwitch */,
-				4C79BEDE2A553F0E006A793C /* LangSwitchTests */,
-				4C79BEE82A553F0E006A793C /* LangSwitchUITests */,
 				4C79BECB2A553F0D006A793C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -96,7 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				4C79BECD2A553F0D006A793C /* LangSwitchApp.swift */,
-				4C79BECF2A553F0D006A793C /* ContentView.swift */,
+				4C79BECF2A553F0D006A793C /* AppDelegate.swift */,
 				4C79BED12A553F0E006A793C /* Assets.xcassets */,
 				4C79BED62A553F0E006A793C /* LangSwitch.entitlements */,
 				4C79BED32A553F0E006A793C /* Preview Content */,
@@ -110,23 +102,6 @@
 				4C79BED42A553F0E006A793C /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		4C79BEDE2A553F0E006A793C /* LangSwitchTests */ = {
-			isa = PBXGroup;
-			children = (
-				4C79BEDF2A553F0E006A793C /* LangSwitchTests.swift */,
-			);
-			path = LangSwitchTests;
-			sourceTree = "<group>";
-		};
-		4C79BEE82A553F0E006A793C /* LangSwitchUITests */ = {
-			isa = PBXGroup;
-			children = (
-				4C79BEE92A553F0E006A793C /* LangSwitchUITests.swift */,
-				4C79BEEB2A553F0E006A793C /* LangSwitchUITestsLaunchTests.swift */,
-			);
-			path = LangSwitchUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -259,7 +234,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C79BED02A553F0D006A793C /* ContentView.swift in Sources */,
+				4C79BED02A553F0D006A793C /* AppDelegate.swift in Sources */,
 				4C79BECE2A553F0D006A793C /* LangSwitchApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -268,7 +243,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C79BEE02A553F0E006A793C /* LangSwitchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,8 +250,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C79BEEC2A553F0E006A793C /* LangSwitchUITestsLaunchTests.swift in Sources */,
-				4C79BEEA2A553F0E006A793C /* LangSwitchUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,18 +388,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LangSwitch/LangSwitch.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"LangSwitch/Preview Content\"";
+				DEVELOPMENT_TEAM = X3Z75V6JU2;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = LangSwitch;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nikeev.LangSwitch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -441,18 +419,24 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LangSwitch/LangSwitch.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"LangSwitch/Preview Content\"";
+				DEVELOPMENT_TEAM = X3Z75V6JU2;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = LangSwitch;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nikeev.LangSwitch;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
