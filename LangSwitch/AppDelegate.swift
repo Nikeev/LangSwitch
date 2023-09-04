@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Skip the emoji keyboard
         while let nextSource = inputSources[nextIndex] as TISInputSource? {
             let sourceName = Unmanaged<CFString>.fromOpaque(TISGetInputSourceProperty(nextSource, kTISPropertyLocalizedName)).takeUnretainedValue() as String
-            if sourceName != "Emoji & Symbols" && sourceName != "com.apple.PressAndHold" {
+            if sourceName != "Emoji & Symbols" && sourceName != "com.apple.PressAndHold" && sourceName != "Dictation" {
                 break
             }
             nextIndex = (nextIndex + 1) % inputSources.count
