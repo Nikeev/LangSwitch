@@ -62,10 +62,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Calculate the index of the next input source
         var nextIndex = (currentIndex + 1) % inputSources.count
         
-        // Skip the emoji keyboard
+        let skipSources = ["Emoji & Symbols", "com.apple.PressAndHold", "Dictation", "EmojiFunctionRowIM_Extension"]
+        
+        // Skip system keyboards
         while let nextSource = inputSources[nextIndex] as TISInputSource? {
             let sourceName = Unmanaged<CFString>.fromOpaque(TISGetInputSourceProperty(nextSource, kTISPropertyLocalizedName)).takeUnretainedValue() as String
-            if sourceName != "Emoji & Symbols" && sourceName != "com.apple.PressAndHold" && sourceName != "Dictation" {
+            if !skipSources.contains(sourceName) {
                 break
             }
             nextIndex = (nextIndex + 1) % inputSources.count
