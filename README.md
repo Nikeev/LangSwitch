@@ -2,7 +2,7 @@
 LangSwitch is a super-simple macOS app that switches your keyboard languages (input sources) one by one by pressing the Fn/🌐 button. It aims to address the annoyance caused by the default macOS function, which includes a popup and a delay between source changes. The sole purpose of this app is to immediately change the language without any popups or delays.
 
 # P.S.
-MacOS Sonoma has such behavior by default, so there's no longer a need for the app :)
+MacOS Sonoma has improved language switching. They removed the popup, and switching is faster. But still it can be glitchy and works with bugs from time to time. So this app can still be relevant)
 
 ![langswitch-example](https://github.com/Nikeev/LangSwitch/assets/1555773/2850313a-f70d-4f76-b629-3d5798754f86)
 
