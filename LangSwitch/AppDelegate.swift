@@ -10,6 +10,7 @@ import Carbon
 import Foundation
 import AppKit
 
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
     
@@ -47,7 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Get all enabled keyboard input sources
-        guard let inputSources = TISCreateInputSourceList(nil, false)?.takeRetainedValue() as? [TISInputSource],
+        guard let inputSources = getInputSources() as? [TISInputSource],
               !inputSources.isEmpty else {
             print("Failed to switch keyboard language.")
             return
@@ -60,21 +61,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Calculate the index of the next input source
-        var nextIndex = (currentIndex + 1) % inputSources.count
-        
-        let skipSources = ["Emoji & Symbols", "com.apple.PressAndHold", "Dictation", "EmojiFunctionRowIM_Extension"]
-        
-        // Skip system keyboards
-        while let nextSource = inputSources[nextIndex] as TISInputSource? {
-            let sourceName = Unmanaged<CFString>.fromOpaque(TISGetInputSourceProperty(nextSource, kTISPropertyLocalizedName)).takeUnretainedValue() as String
-            if !skipSources.contains(sourceName) {
-                break
-            }
-            nextIndex = (nextIndex + 1) % inputSources.count
-        }
+        let nextIndex = (currentIndex + 1) % inputSources.count
         
         // Retrieve the next input source
-        let nextSource = inputSources[nextIndex] as! TISInputSource
+        let nextSource = inputSources[nextIndex]
         
         // Switch to the next input source
         TISSelectInputSource(nextSource)
@@ -82,5 +72,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Print the new input source's name
         let newSourceName = Unmanaged<CFString>.fromOpaque(TISGetInputSourceProperty(nextSource, kTISPropertyLocalizedName)).takeUnretainedValue() as String
         print("Switched to: \(newSourceName)")
+    }
+    
+    func getInputSources() -> [TISInputSource] {
+        let inputSourceNSArray = TISCreateInputSourceList(nil, false)
+            .takeRetainedValue() as NSArray
+        var inputSourceList = inputSourceNSArray as! [TISInputSource]
+        
+        inputSourceList = inputSourceList.filter({
+            $0.category == TISInputSource.Category.keyboardInputSource
+        })
+        
+        let inputSources = inputSourceList.filter(
+            {
+                $0.isSelectable
+            })
+        
+        return inputSources
+    }
+}
+
+extension TISInputSource {
+    enum Category {
+        static var keyboardInputSource: String {
+            return kTISCategoryKeyboardInputSource as String
+        }
+    }
+    
+    private func getProperty(_ key: CFString) -> AnyObject? {
+        let cfType = TISGetInputSourceProperty(self, key)
+        if (cfType != nil) {
+            return Unmanaged<AnyObject>.fromOpaque(cfType!)
+                .takeUnretainedValue()
+        } else {
+            return nil
+        }
+    }
+    
+    var category: String {
+        return getProperty(kTISPropertyInputSourceCategory) as! String
+    }
+    
+    var isSelectable: Bool {
+        return getProperty(kTISPropertyInputSourceIsSelectCapable) as! Bool
     }
 }
