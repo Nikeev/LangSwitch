@@ -13,6 +13,7 @@ import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
+    let longPressThreshold: TimeInterval = 0.2;
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Create a status bar item with a system icon
@@ -27,11 +28,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         NSApp.hide(nil)
         
+        var anotherClicked = false;
+        var lastPressTime = Date();
+        
         // Register for Fn button press events
         NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { event in
-            if event.modifierFlags.contains(.function) {
-                // Call the function to handle "Fn" button press
-                self.switchKeyboardLanguage()
+            if (event.keyCode == 63 && event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.function)) {
+                anotherClicked = false;
+                lastPressTime = Date();
+            }
+            
+            if (!event.modifierFlags.intersection([.shift, .control, .option, .command]).isEmpty) {
+                anotherClicked = true;
+            }
+
+            if (event.keyCode == 63 &&
+                !anotherClicked &&
+                event.modifierFlags.intersection(.deviceIndependentFlagsMask) == []) {
+                var timePassed = Date().timeIntervalSince(lastPressTime);
+                if (timePassed < self.longPressThreshold) {
+                    self.switchKeyboardLanguage();
+                }
             }
         }
     }
