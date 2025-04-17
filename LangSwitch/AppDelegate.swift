@@ -37,21 +37,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Register for Fn button press events
         NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { event in
-            if (event.keyCode == 63 && event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.function)) {
-                anotherClicked = false;
-                lastPressTime = Date();
-            }
-            
-            if (!event.modifierFlags.intersection([.shift, .control, .option, .command]).isEmpty) {
-                anotherClicked = true;
+            guard event.keyCode == 63 else {
+                return
             }
 
-            if (event.keyCode == 63 &&
-                !anotherClicked &&
-                event.modifierFlags.intersection(.deviceIndependentFlagsMask) == []) {
-                var timePassed = Date().timeIntervalSince(lastPressTime);
-                if (timePassed < self.longPressThreshold) {
-                    self.switchKeyboardLanguage();
+            if event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.function) {
+                anotherClicked = false
+                lastPressTime = Date()
+            }
+
+            if !event.modifierFlags.intersection([.shift, .control, .option, .command]).isEmpty {
+                anotherClicked = true
+            }
+
+            if event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty && !anotherClicked {
+                let timePassed = Date().timeIntervalSince(lastPressTime)
+                if timePassed < self.longPressThreshold {
+                    self.switchKeyboardLanguage()
                 }
             }
         }
