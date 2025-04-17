@@ -9,6 +9,7 @@ import SwiftUI
 import Carbon
 import Foundation
 import AppKit
+import IOKit.hid
 
 
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -50,7 +51,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 anotherClicked = true
             }
 
-            if event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty && !anotherClicked {
+            let allowedFlags: NSEvent.ModifierFlags = [.capsLock]
+            let remainingFlags = event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(allowedFlags)
+            if remainingFlags.isEmpty && !anotherClicked {
                 let timePassed = Date().timeIntervalSince(lastPressTime)
                 if timePassed < self.longPressThreshold {
                     self.switchKeyboardLanguage()
