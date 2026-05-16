@@ -13,15 +13,13 @@ import IOKit.hid
 import ServiceManagement
 
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusBarItem: NSStatusItem?
     var aboutWindow: NSWindow?
-    let longPressThreshold: TimeInterval = 0.2;
+    var launchAtLoginMenuItem: NSMenuItem?
+    let longPressThreshold: TimeInterval = 0.2
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // launch at login
-        launchAtLogin()
-        
         // Create a status bar item with a system icon
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusBarItem?.button?.image = NSImage(systemSymbolName: "globe", accessibilityDescription: nil)
@@ -29,22 +27,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Add a menu to the status bar item
         let menu = NSMenu()
+        menu.delegate = self
         menu.addItem(withTitle: "About LangSwitch", action: #selector(showAboutWindow), keyEquivalent: "")
-        menu.addItem(withTitle: "Hide Icon", action: #selector(hideStatusBarIcon), keyEquivalent: "")
+        menu.addItem(.separator())
+        launchAtLoginMenuItem = menu.addItem(withTitle: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        launchAtLoginMenuItem?.target = self
+        refreshLaunchAtLoginMenuItem()
+        menu.addItem(.separator())
         menu.addItem(withTitle: "Exit", action: #selector(exitAction), keyEquivalent: "")
         statusBarItem?.menu = menu
-        
-        // hide menu bar if the button was pressed once
-        let userDefaults = UserDefaults.standard
-        if userDefaults.bool(forKey: "hideStatusBarIcon") {
-            statusBarItem?.isVisible = false
-        }
-        
+
         NSApp.setActivationPolicy(.accessory)
         NSApp.hide(nil)
         
-        var anotherClicked = false;
-        var lastPressTime = Date();
+        var anotherClicked = false
+        var lastPressTime = Date()
         
         // Register for Fn button press events
         NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { event in
@@ -104,24 +101,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    @objc func launchAtLogin() {
+    func menuWillOpen(_ menu: NSMenu) {
+        refreshLaunchAtLoginMenuItem()
+    }
+
+    func refreshLaunchAtLoginMenuItem() {
+        guard let item = launchAtLoginMenuItem else {
+            return
+        }
+
         if #available(macOS 13.0, *) {
-            do {
-                if SMAppService.mainApp.status == .enabled {
-                    // do nothing
-                    print("Login item already registered.")
-                } else {
-                    try SMAppService.mainApp.register()
-                }
-            } catch {
-                print("Failed to enable login item: \(error)")
+            switch SMAppService.mainApp.status {
+            case .enabled:
+                item.title = "Launch at Login"
+                item.state = .on
+                item.isEnabled = true
+            case .notRegistered:
+                item.title = "Launch at Login"
+                item.state = .off
+                item.isEnabled = true
+            case .requiresApproval:
+                item.title = "Launch at Login (Needs Approval)"
+                item.state = .mixed
+                item.isEnabled = true
+            case .notFound:
+                item.title = "Launch at Login (Unavailable)"
+                item.state = .off
+                item.isEnabled = false
+            @unknown default:
+                item.title = "Launch at Login (Unknown)"
+                item.state = .off
+                item.isEnabled = false
             }
         } else {
-            // Fallback on earlier versions
-            print("Login item functionality is not available on this version of macOS.")
+            item.title = "Launch at Login (Requires macOS 13)"
+            item.state = .off
+            item.isEnabled = false
         }
     }
 
+    @objc func toggleLaunchAtLogin() {
+        guard #available(macOS 13.0, *) else {
+            showAlert(message: "Launch at Login requires macOS 13 or later.")
+            return
+        }
+
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+            } else {
+                try SMAppService.mainApp.register()
+            }
+            refreshLaunchAtLoginMenuItem()
+        } catch {
+            refreshLaunchAtLoginMenuItem()
+            showAlert(message: "Failed to update Launch at Login: \(error.localizedDescription)")
+        }
+    }
 
     @objc func openGitHub() {
         if let url = URL(string: "https://github.com/Nikeev/LangSwitch") {
@@ -143,11 +179,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                    let latestVersion = json["tag_name"] as? String {
                     let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0"
 
-                    if latestVersion > "v\(currentVersion)" {
+                    guard let latest = SemanticVersion(latestVersion),
+                          let current = SemanticVersion(currentVersion) else {
+                        self.showAlert(message: "Unable to compare update versions.")
+                        return
+                    }
+
+                    if latest > current {
                         self.showAlert(message: "New version \(latestVersion) is available! Download it from GitHub.")
                     } else {
                         self.showAlert(message: "You're up to date.")
                     }
+                } else {
+                    self.showAlert(message: "Error parsing update information.")
                 }
             } catch {
                 self.showAlert(message: "Error parsing update information.")
@@ -163,14 +207,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             alert.runModal()
         }
     }
-    
-    @objc func hideStatusBarIcon() {
-        statusBarItem?.isVisible = false
-        let userDefaults = UserDefaults.standard
-        userDefaults.set(true, forKey: "hideStatusBarIcon")
-        UserDefaults.standard.synchronize()
-    }
-    
+
     @objc func exitAction() {
         NSApplication.shared.terminate(nil)
     }
@@ -183,8 +220,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Get all enabled keyboard input sources
-        guard let inputSources = getInputSources() as? [TISInputSource],
-              !inputSources.isEmpty else {
+        let inputSources = getInputSources()
+        guard !inputSources.isEmpty else {
             print("Failed to switch keyboard language.")
             return
         }
@@ -205,25 +242,58 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         TISSelectInputSource(nextSource)
         
         // Print the new input source's name
-        let newSourceName = Unmanaged<CFString>.fromOpaque(TISGetInputSourceProperty(nextSource, kTISPropertyLocalizedName)).takeUnretainedValue() as String
+        let newSourceName = nextSource.localizedName ?? "Unknown input source"
         print("Switched to: \(newSourceName)")
     }
     
     func getInputSources() -> [TISInputSource] {
         let inputSourceNSArray = TISCreateInputSourceList(nil, false)
             .takeRetainedValue() as NSArray
-        var inputSourceList = inputSourceNSArray as! [TISInputSource]
+        let inputSourceList = inputSourceNSArray.compactMap { $0 as? TISInputSource }
         
-        inputSourceList = inputSourceList.filter({
-            $0.category == TISInputSource.Category.keyboardInputSource
-        })
-        
-        let inputSources = inputSourceList.filter(
-            {
-                $0.isSelectable
-            })
-        
-        return inputSources
+        return inputSourceList.filter {
+            $0.category == TISInputSource.Category.keyboardInputSource && $0.isSelectable
+        }
+    }
+}
+
+private struct SemanticVersion: Comparable {
+    private let components: [Int]
+
+    init?(_ string: String) {
+        var core = string.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let firstCharacter = core.first,
+           firstCharacter == "v" || firstCharacter == "V" {
+            core.removeFirst()
+        }
+
+        if let suffixIndex = core.firstIndex(where: { $0 == "-" || $0 == "+" }) {
+            core = String(core[..<suffixIndex])
+        }
+
+        let parsedComponents = core.split(separator: ".").map { Int($0) }
+
+        guard !parsedComponents.isEmpty, parsedComponents.allSatisfy({ $0 != nil }) else {
+            return nil
+        }
+
+        components = parsedComponents.compactMap { $0 }
+    }
+
+    static func < (lhs: SemanticVersion, rhs: SemanticVersion) -> Bool {
+        let componentCount = max(lhs.components.count, rhs.components.count)
+
+        for index in 0..<componentCount {
+            let left = index < lhs.components.count ? lhs.components[index] : 0
+            let right = index < rhs.components.count ? rhs.components[index] : 0
+
+            if left != right {
+                return left < right
+            }
+        }
+
+        return false
     }
 }
 
@@ -235,20 +305,22 @@ extension TISInputSource {
     }
     
     private func getProperty(_ key: CFString) -> AnyObject? {
-        let cfType = TISGetInputSourceProperty(self, key)
-        if (cfType != nil) {
-            return Unmanaged<AnyObject>.fromOpaque(cfType!)
-                .takeUnretainedValue()
-        } else {
+        guard let cfType = TISGetInputSourceProperty(self, key) else {
             return nil
         }
+
+        return Unmanaged<AnyObject>.fromOpaque(cfType).takeUnretainedValue()
     }
     
-    var category: String {
-        return getProperty(kTISPropertyInputSourceCategory) as! String
+    var category: String? {
+        return getProperty(kTISPropertyInputSourceCategory) as? String
     }
     
     var isSelectable: Bool {
-        return getProperty(kTISPropertyInputSourceIsSelectCapable) as! Bool
+        return getProperty(kTISPropertyInputSourceIsSelectCapable) as? Bool ?? false
+    }
+
+    var localizedName: String? {
+        return getProperty(kTISPropertyLocalizedName) as? String
     }
 }
