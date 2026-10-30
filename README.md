@@ -8,5 +8,5 @@ MacOS Sonoma has improved language switching. They removed the popup, and switch
 
 **How to use:**
 - Download and install the app from the releases page.
-- Disable the default macOS 🌐 button click action in Keyboard settings.
 - Run the LangSwitch app.
+- Grant it Accessibility permission when asked (System Settings → Privacy & Security → Accessibility). LangSwitch uses it to take over the 🌐 key, so the default macOS 🌐 action does not need to be disabled.
