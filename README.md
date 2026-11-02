@@ -11,6 +11,9 @@ MacOS Sonoma has improved language switching. They removed the popup, and switch
 - Disable the default macOS 🌐 button click action in Keyboard settings.
 - Run the LangSwitch app.
 
+Caps Lock stays enabled when switching input sources. Its indicator may briefly
+flicker while the app restores the state after macOS clears it.
+
 **Restore the menu bar icon:**
 - If you used Hide Icon, open the running LangSwitch app again from Finder,
   Launchpad, or Spotlight. The icon and its menu will reappear, and the icon

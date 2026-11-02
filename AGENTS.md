@@ -15,6 +15,8 @@ popup or delay. Keep this single-purpose behavior fast and predictable.
 - `LangSwitch/LangSwitch.entitlements`: App Sandbox, outgoing network access
   for update checks, and user-selected read-only file access.
 - `LangSwitch/Assets.xcassets`: app icon and color assets.
+- `Tests/CapsLockStateChecks.swift`: standalone assertions for HID read failures;
+  compiled with `AppDelegate.swift`, outside the Xcode targets.
 - `LangSwitch.xcodeproj/project.pbxproj`: targets, source membership, generated
   Info.plist settings, versions, deployment targets, and signing configuration.
 - `README.md`: purpose and user setup instructions. `LICENSE`: MIT license.
@@ -29,8 +31,9 @@ uses SwiftUI, AppKit, Carbon, IOKit, and ServiceManagement.
 - A global `NSEvent` monitor observes `flagsChanged` events for key code 63.
   Switching happens on release when the press lasts less than 0.2 seconds.
   Caps Lock is allowed; the handler also checks other modifier flags.
-  Input-source selection can still turn Caps Lock off; the app currently does
-  not restore its state (see GitHub issues #12 and #14).
+  Before switching, the app reads Caps Lock through IOKit and restores it if it
+  was on. Read failures return `nil` and do not stop input-source switching;
+  read and write failures are logged. The Caps Lock LED may briefly flicker.
 - `switchKeyboardLanguage()` gets the current input source, finds it in the
   selectable keyboard sources returned by Carbon, and selects the next one
   with wraparound. This is sequential cycling, not last-used-source toggling.
@@ -74,10 +77,23 @@ Xcode to validate macOS 11 support. A command-line override such as
 validate the declared minimum OS version or change the project settings.
 
 `LangSwitchTests` and `LangSwitchUITests` targets exist, but their Sources build
-phases are empty and no test implementations are checked in. A successful build
-does not prove keyboard-event behavior. For event-handling changes, manually
-check short taps, long holds, rapid taps, Fn shortcuts with modifiers and arrow
-keys, Caps Lock on/off, and cycling through two and three input sources. Check
+phases are empty. Run the standalone Caps Lock regression checks from the repo
+root without launching the app or changing the keyboard state:
+
+```sh
+xcrun swiftc \
+    -parse-as-library \
+    -module-cache-path /tmp/LangSwitch-CheckModuleCache \
+    LangSwitch/AppDelegate.swift \
+    Tests/CapsLockStateChecks.swift \
+    -o /tmp/LangSwitch-CapsLockChecks
+/tmp/LangSwitch-CapsLockChecks
+```
+
+A successful build does not prove keyboard-event behavior. For event-handling
+changes, manually check short taps, long holds, rapid taps, Fn shortcuts with
+modifiers and arrow keys, Caps Lock on/off, and cycling through two and three
+input sources. Check
 sleep/wake for monitor changes and relaunch/login for startup or menu changes.
 For icon visibility changes, check Hide Icon, reopen the running app, and
 relaunch; the restored icon should stay visible until explicitly hidden again.
@@ -100,7 +116,7 @@ Report which checks actually ran and which require real hardware or permissions.
   text collection, clipboard access, telemetry, or background update polling.
 - Add a focused regression check for nontrivial new logic when practical;
   hardware-dependent behavior also needs a documented manual check.
-- If adding a Swift file, include it in the appropriate Xcode Sources phase.
+- If adding an app Swift file, include it in the appropriate Xcode Sources phase.
   Avoid unrelated changes to signing teams, bundle IDs, entitlements, versions,
   or deployment targets.
 - Do not include local `xcuserdata`, breakpoints, DerivedData, or build products
