@@ -1,4 +1,7 @@
 # LangSwitch
+
+Requires macOS 12 (Monterey) or later.
+
 LangSwitch is a super-simple macOS app that switches your keyboard languages (input sources) one by one by pressing the Fn/🌐 button. It aims to address the annoyance caused by the default macOS function, which includes a popup and a delay between source changes. The sole purpose of this app is to immediately change the language without any popups or delays.
 
 # P.S.
@@ -10,3 +13,11 @@ MacOS Sonoma has improved language switching. They removed the popup, and switch
 - Download and install the app from the releases page.
 - Disable the default macOS 🌐 button click action in Keyboard settings.
 - Run the LangSwitch app.
+
+Caps Lock stays enabled when switching input sources. Its indicator may briefly
+flicker while the app restores the state after macOS clears it.
+
+**Restore the menu bar icon:**
+- If you used Hide Icon, open the running LangSwitch app again from Finder,
+  Launchpad, or Spotlight. The icon and its menu will reappear, and the icon
+  will stay visible on future launches until you hide it again.

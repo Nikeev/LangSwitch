@@ -71,6 +71,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
+
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows flag: Bool
+    ) -> Bool {
+        statusBarItem?.isVisible = true
+        UserDefaults.standard.set(false, forKey: "hideStatusBarIcon")
+        return false
+    }
     
     @objc func showAboutWindow() {
         if aboutWindow == nil {
@@ -207,7 +216,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Switch to the next input source
         TISSelectInputSource(nextSource)
 
-        if capsLockWasOn {
+        if capsLockWasOn == true {
             setCapsLockState(true)
         }
 
@@ -233,17 +242,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return inputSources
     }
 
-    func getCapsLockState() -> Bool {
-        var state = false
+    func getCapsLockState() -> Bool? {
+        var state: Bool?
         withHIDSystemConnection { connection in
-            IOHIDGetModifierLockState(connection, Int32(kIOHIDCapsLockState), &state)
+            var lockState = false
+            let result = IOHIDGetModifierLockState(
+                connection,
+                Int32(kIOHIDCapsLockState),
+                &lockState
+            )
+            guard result == KERN_SUCCESS else {
+                print("Failed to read Caps Lock state: \(result)")
+                return
+            }
+            state = lockState
         }
         return state
     }
 
     func setCapsLockState(_ state: Bool) {
         withHIDSystemConnection { connection in
-            IOHIDSetModifierLockState(connection, Int32(kIOHIDCapsLockState), state)
+            let result = IOHIDSetModifierLockState(
+                connection,
+                Int32(kIOHIDCapsLockState),
+                state
+            )
+            if result != KERN_SUCCESS {
+                print("Failed to set Caps Lock state: \(result)")
+            }
         }
     }
 
