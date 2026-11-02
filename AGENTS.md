@@ -54,7 +54,7 @@ Update this file when an accepted change alters these behaviors.
 
 Use a full Xcode installation on macOS. Open `LangSwitch.xcodeproj` and select
 the `LangSwitch` scheme. The project uses Swift 5 language mode. The app target
-overrides the project deployment target to macOS 11; project-level and unit
+overrides the project deployment target to macOS 12; project-level and unit
 test settings specify macOS 13.3. Guard newer APIs rather than silently raising
 the app's minimum OS version.
 
@@ -70,11 +70,6 @@ xcodebuild \
     CODE_SIGNING_ALLOWED=NO \
     build
 ```
-
-If a newer Xcode rejects the macOS 11 deployment target, use a compatible older
-Xcode to validate macOS 11 support. A command-line override such as
-`MACOSX_DEPLOYMENT_TARGET=12.0` can check compilation with Xcode 27, but does not
-validate the declared minimum OS version or change the project settings.
 
 `LangSwitchTests` and `LangSwitchUITests` targets exist, but their Sources build
 phases are empty. Run the standalone Caps Lock regression checks from the repo
