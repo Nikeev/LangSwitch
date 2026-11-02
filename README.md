@@ -10,3 +10,8 @@ MacOS Sonoma has improved language switching. They removed the popup, and switch
 - Download and install the app from the releases page.
 - Disable the default macOS 🌐 button click action in Keyboard settings.
 - Run the LangSwitch app.
+
+**Restore the menu bar icon:**
+- If you used Hide Icon, open the running LangSwitch app again from Finder,
+  Launchpad, or Spotlight. The icon and its menu will reappear, and the icon
+  will stay visible on future launches until you hide it again.

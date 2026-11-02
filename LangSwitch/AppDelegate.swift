@@ -71,6 +71,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
+
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows flag: Bool
+    ) -> Bool {
+        statusBarItem?.isVisible = true
+        UserDefaults.standard.set(false, forKey: "hideStatusBarIcon")
+        return false
+    }
     
     @objc func showAboutWindow() {
         if aboutWindow == nil {
