@@ -210,9 +210,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Retrieve the next input source
         let nextSource = inputSources[nextIndex]
         
+        // Switching the input source makes macOS turn Caps Lock off, so restore it afterwards
+        let capsLockWasOn = getCapsLockState()
+
         // Switch to the next input source
         TISSelectInputSource(nextSource)
-        
+
+        if capsLockWasOn {
+            setCapsLockState(true)
+        }
+
         // Print the new input source's name
         let newSourceName = Unmanaged<CFString>.fromOpaque(TISGetInputSourceProperty(nextSource, kTISPropertyLocalizedName)).takeUnretainedValue() as String
         print("Switched to: \(newSourceName)")
@@ -233,6 +240,40 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             })
         
         return inputSources
+    }
+
+    func getCapsLockState() -> Bool {
+        var state = false
+        withHIDSystemConnection { connection in
+            IOHIDGetModifierLockState(connection, Int32(kIOHIDCapsLockState), &state)
+        }
+        return state
+    }
+
+    func setCapsLockState(_ state: Bool) {
+        withHIDSystemConnection { connection in
+            IOHIDSetModifierLockState(connection, Int32(kIOHIDCapsLockState), state)
+        }
+    }
+
+    func withHIDSystemConnection(_ body: (io_connect_t) -> Void) {
+        // MACH_PORT_NULL selects the default main port and, unlike kIOMainPortDefault, works on macOS 11
+        let service = IOServiceGetMatchingService(mach_port_t(MACH_PORT_NULL), IOServiceMatching(kIOHIDSystemClass))
+        guard service != 0 else {
+            print("Failed to find IOHIDSystem service.")
+            return
+        }
+        defer { IOObjectRelease(service) }
+
+        var connection: io_connect_t = 0
+        let result = IOServiceOpen(service, mach_task_self_, UInt32(kIOHIDParamConnectType), &connection)
+        guard result == KERN_SUCCESS else {
+            print("Failed to open IOHIDSystem connection: \(result)")
+            return
+        }
+        defer { IOServiceClose(connection) }
+
+        body(connection)
     }
 }
 
