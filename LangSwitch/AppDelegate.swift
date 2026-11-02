@@ -17,7 +17,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem?
     var aboutWindow: NSWindow?
     let longPressThreshold: TimeInterval = 0.2;
-    
+
+    // Fn arrives as a flags change on this key code. On release macOS also sends a key down/up on the Globe
+    // key code, and that event is what triggers its own "Press Globe to" action.
+    let fnKeyCode: Int64 = 63
+    let globeKeyCode: Int64 = 179
+    let accessibilityRetryInterval: TimeInterval = 2
+
+    var eventTap: CFMachPort?
+    var anotherClicked = false
+    var lastPressTime = Date()
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // launch at login
         launchAtLogin()
@@ -43,31 +53,85 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         NSApp.hide(nil)
         
-        var anotherClicked = false;
-        var lastPressTime = Date();
-        
-        // Register for Fn button press events
-        NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { event in
-            guard event.keyCode == 63 else {
-                return
-            }
+        startEventTap()
+    }
 
-            if event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.function) {
-                anotherClicked = false
-                lastPressTime = Date()
-            }
+    // An event tap rather than an NSEvent global monitor: the monitor can stop delivering while the app keeps
+    // running, whereas a tap is told when macOS disables it and is re-enabled. As an active tap it can also drop
+    // the Globe key event, so macOS's own "Press Globe to" action never fires and does not need turning off.
+    // It requires Accessibility permission.
+    func startEventTap() {
+        let mask: CGEventMask = (1 << CGEventType.flagsChanged.rawValue)
+            | (1 << CGEventType.keyDown.rawValue)
+            | (1 << CGEventType.keyUp.rawValue)
 
-            if !event.modifierFlags.intersection([.shift, .control, .option, .command]).isEmpty {
-                anotherClicked = true
-            }
+        let callback: CGEventTapCallBack = { _, type, event, userInfo in
+            let delegate = Unmanaged<AppDelegate>.fromOpaque(userInfo!).takeUnretainedValue()
+            return delegate.handle(type: type, event: event)
+        }
 
-            let allowedFlags: NSEvent.ModifierFlags = [.capsLock]
-            let remainingFlags = event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(allowedFlags)
-            if remainingFlags.isEmpty && !anotherClicked {
-                let timePassed = Date().timeIntervalSince(lastPressTime)
-                if timePassed < self.longPressThreshold {
-                    self.switchKeyboardLanguage()
-                }
+        guard let tap = CGEvent.tapCreate(tap: .cghidEventTap,
+                                          place: .headInsertEventTap,
+                                          options: .defaultTap,
+                                          eventsOfInterest: mask,
+                                          callback: callback,
+                                          userInfo: Unmanaged.passUnretained(self).toOpaque()) else {
+            // Without Accessibility the tap cannot be created: ask once, then retry until it is granted
+            print("Event tap could not be created, waiting for Accessibility permission.")
+            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+            AXIsProcessTrustedWithOptions(options)
+            Timer.scheduledTimer(withTimeInterval: accessibilityRetryInterval, repeats: true) { timer in
+                guard AXIsProcessTrusted() else { return }
+                timer.invalidate()
+                self.startEventTap()
+            }
+            return
+        }
+
+        eventTap = tap
+        CFRunLoopAddSource(CFRunLoopGetMain(), CFMachPortCreateRunLoopSource(nil, tap, 0), .commonModes)
+        CGEvent.tapEnable(tap: tap, enable: true)
+    }
+
+    func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            print("Event tap was disabled by the system, re-enabling it.")
+            if let eventTap {
+                CGEvent.tapEnable(tap: eventTap, enable: true)
+            }
+            return Unmanaged.passUnretained(event)
+        }
+
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+
+        if (type == .keyDown || type == .keyUp) && keyCode == globeKeyCode {
+            return nil
+        }
+
+        if type == .flagsChanged && keyCode == fnKeyCode {
+            // CGEventFlags and NSEvent.ModifierFlags share the same bit layout
+            handleFn(modifierFlags: NSEvent.ModifierFlags(rawValue: UInt(event.flags.rawValue)))
+        }
+
+        return Unmanaged.passUnretained(event)
+    }
+
+    func handleFn(modifierFlags: NSEvent.ModifierFlags) {
+        if modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.function) {
+            anotherClicked = false
+            lastPressTime = Date()
+        }
+
+        if !modifierFlags.intersection([.shift, .control, .option, .command]).isEmpty {
+            anotherClicked = true
+        }
+
+        let allowedFlags: NSEvent.ModifierFlags = [.capsLock]
+        let remainingFlags = modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(allowedFlags)
+        if remainingFlags.isEmpty && !anotherClicked {
+            let timePassed = Date().timeIntervalSince(lastPressTime)
+            if timePassed < longPressThreshold {
+                switchKeyboardLanguage()
             }
         }
     }
