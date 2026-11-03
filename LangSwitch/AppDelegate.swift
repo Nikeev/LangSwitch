@@ -40,7 +40,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusBarItem?.isVisible = false
         }
         
-        NSApp.setActivationPolicy(.accessory)
         NSApp.hide(nil)
         
         var anotherClicked = false;

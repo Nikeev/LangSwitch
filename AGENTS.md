@@ -37,7 +37,8 @@ uses SwiftUI, AppKit, Carbon, IOKit, and ServiceManagement.
 - `switchKeyboardLanguage()` gets the current input source, finds it in the
   selectable keyboard sources returned by Carbon, and selects the next one
   with wraparound. This is sequential cycling, not last-used-source toggling.
-- The app uses the accessory activation policy. Its menu offers About,
+- The app is a menu bar agent (`LSUIElement` in the generated Info.plist), so
+  it never shows a Dock icon. Its menu offers About,
   Hide Icon, and Exit. Hiding the icon persists in the `hideStatusBarIcon`
   UserDefaults key. Reopening the running app restores the icon and clears
   that preference through `applicationShouldHandleReopen`.
